@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HỆ THỐNG BẢNG TUẦN HOÀN CÁC NGUYÊN TỐ HOÁ HỌC</title>
+    <style>
+        #landing-page {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #004488 0%, #000810 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            color: white;
+            text-align: center;
+        }
+
+        #landing-page h1 {
+            font-size: clamp(35px, 7vw, 70px);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+            border: none;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #00d4ff;
+            margin-bottom: 50px;
+            letter-spacing: 3px;
+            font-weight: 300;
+        }
+
+        .menu-buttons {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .circle-btn {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            font-size: 35px;
+            font-family: "Times New Roman", serif;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .circle-btn:hover {
+            background: white;
+            color: #001122;
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+            border-color: white;
+        }
+
+        .triangle {
+            width: 0; height: 0;
+            border-top: 18px solid transparent;
+            border-bottom: 18px solid transparent;
+            border-left: 28px solid currentColor;
+            margin-left: 8px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ffffff;
+            color: #1a1a1a;
+            padding: 40px;
+            border-radius: 20px;
+            width: 85%;
+            max-width: 600px;
+            z-index: 10001;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .modal h3 {
+            color: #004488;
+            font-size: 24px;
+            margin-top: 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .modal-content {
+            text-align: left;
+            font-size: 15px;
+            line-height: 1.7;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+            padding-right: 15px;
+        }
+
+        .close-modal {
+            padding: 12px 30px;
+            background: #004488;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        :root { 
+            --cell-w: 90px; 
+            --cell-h: 110px; 
+        }
+
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: #fff; 
+            margin: 0; 
+            padding: 0; 
+            overflow-x: hidden;
+        }
+
+        .main-title { 
+            color: #004488; 
+            text-align: center; 
+            text-transform: uppercase; 
+            font-size: clamp(24px, 5vw, 42px);
+            font-weight: bold;
+            margin: 15px 0 5px 0;
+            text-shadow: 1px 1px 2px #ccc;
+        }
+
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .tab-btn {
+            padding: 10px 25px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #004488;
+            background: #f0f5fa;
+            border: 2px solid #004488;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            background: #004488;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,68,136,0.3);
+        }
+        .tab-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            padding: 10px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .periodic-table {
+            display: grid;
+            grid-template-columns: repeat(18, var(--cell-w));
+            grid-template-rows: repeat(10, var(--cell-h));
+            grid-gap: 5px;
+            margin: 0 auto;
+            width: max-content;
+        }
+
+        .element {
+            border: 1px solid #333;
+            text-decoration: none;
+            color: #000;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 4px;
+            font-size: 9px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background: #f9f9f9;
+            box-sizing: border-box;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .element:hover { 
+            transform: scale(1.5); 
+            z-index: 100; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.5); 
+            border: 1.5px solid #000; 
+        }
+
+        .num { grid-column: 1; font-weight: bold; font-size: 12px; }
+        .mass { grid-column: 2; text-align: right; font-size: 9px; }
+        .sym { grid-column: 1; font-size: 26px; font-weight: bold; text-align: left; }
+        .en { grid-column: 2; text-align: right; font-size: 11px; align-self: center; font-weight: bold; color: #d00; }
+        .name { grid-column: 1 / span 2; font-weight: bold; font-size: 10px; margin-top: -3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .conf { grid-column: 1 / span 2; text-align: center; font-size: 7px; font-family: "Times New Roman", serif; }
+        .ox { grid-column: 1 / span 2; background: #fff; border-top: 0.5px solid #333; text-align: center; font-size: 8px; margin-top: 2px; height: 14px; display: flex; align-items: center; justify-content: center; }
+
+        .element-img-mode {
+            border: 1px solid #333;
+            color: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 4px 3px;
+            box-sizing: border-box;
+            border-radius: 4px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background: #f9f9f9;
+            cursor: default;     
+            user-select: none;
+        }
+        .element-img-mode:hover {
+            transform: scale(1.6); 
+            z-index: 100;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border: 1.5px solid #000;
+        }
+        .el-header {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 1px;
+            color: #555;
+        }
+        .el-icon {
+            font-size: 34px;
+            margin: 2px 0;
+            line-height: 1;
+        }
+        .el-vname {
+            font-weight: bold;
+            font-size: 10px;
+            width: 100%;
+            margin-top: 5px;       
+            margin-bottom: 3px;    
+            text-transform: uppercase;
+            text-align: center;
+            color: #000;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .el-desc {
+            font-size: 8.5px;
+            color: #333;
+            line-height: 1.1;
+            width: 100%;
+            text-align: left;
+            border-top: 0.5px solid #ccc;
+            padding-top: 2px;
+            margin-top: auto;
+            white-space: normal;   
+            overflow: visible;     
+            text-overflow: clip;   
+        }
+        .notice-bar{
+			width:100%;
+			background:#004488;
+			color:white;
+			text-align:center;
+			padding:12px 24px;
+			font-size:20px;
+			font-weight:500;
+			box-sizing:border-box;
+		}
+        .s { background-color: #98fb98; } 
+        .p { background-color: #ffb6c1; } 
+        .d { background-color: #ffff99; } 
+        .f { background-color: #ffcc99; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+	<div class="notice-bar">
+    ⚠️ <strong>Thông báo:</strong>
+    Website còn đang trong quá trình chỉnh sửa và hoàn thiện, mọi góp ý xin liên hệ Gmail của chúng tôi.
+	</div>
+    <div id="landing-page">
+        <h1>BẢNG TUẦN HOÀN CÁC NGUYÊN TỐ HOÁ HỌC</h1>
+        <div class="subtitle">HỆ THỐNG TRA CỨU BẢNG TUẦN HOÀN CÁC NGUYÊN TỐ HÓA HỌC TRỰC TUYẾN</div>
+        
+        <div class="menu-buttons">
+            <button class="circle-btn" title="Thông tin" onclick="openModal('info')">i</button>
+            <button class="circle-btn" title="Bắt đầu tra cứu" onclick="startApp()">
+                <div class="triangle"></div>
+            </button>
+            <button class="circle-btn" title="Liên hệ tác giả" onclick="openModal('contact')">?</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="overlay" onclick="closeModal()"></div>
+    
+    <div class="modal" id="modal-info">
+        <h3>Về Dự Án Này</h3>
+        <div class="modal-content">
+            <p><strong>1. Giới thiệu:</strong> Đây là công cụ tra cứu thông tin của 118 nguyên tố hóa học trong bảng tuần hoàn.</p>
+            <p><strong>2. Thông số:</strong> Bao gồm Số hiệu, Nguyên tử khối, Độ âm điện, Cấu hình electron và Số oxi hóa.</p>
+            <p><strong>3. Cách dùng:</strong> Di chuột để phóng to ô nguyên tử. Ở chế độ xem chi tiết, bạn có thể click để liên kết đến trang Wikipedia.</p>
+        </div>
+        <div style="text-align: right;"><button class="close-modal" onclick="closeModal()">Đã hiểu</button></div>
+    </div>
+
+    <div class="modal" id="modal-contact">
+        <h3>Thông Tin</h3>
+        <div class="modal-content">
+            <p><strong>Tác giả:</strong> Mai Hải Ninh, Nguyễn Thị Yến Nhi</p>
+            <p><strong>Cập nhật:</strong> Tháng 5, 2026</p>
+            <p><strong>Liên hệ:</strong> maihaininh1802@gmail.com</p>
+        </div>
+        <div style="text-align: right;"><button class="close-modal" onclick="closeModal()">Đóng</button></div>
+    </div>
+
+    <div id="main-content" style="display:none; padding: 10px;">
+        <h1 class="main-title">Bảng Tuần Hoàn Các Nguyên Tố Hóa Học</h1>
+        
+        <div class="tab-container">
+            <button class="tab-btn active" id="tab-data" onclick="switchTableMode('data')">Bảng thông tin chi tiết</button>
+            <button class="tab-btn" id="tab-img" onclick="switchTableMode('img')">Bảng minh họa bằng hình ảnh</button>
+        </div>
+
+        <div class="table-container" id="wrapper-data">
+            <div class="periodic-table" id="table"></div>
+        </div>
+
+        <div class="table-container hidden" id="wrapper-img">
+            <div class="periodic-table" id="table-img"></div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <button onclick="location.reload()" style="background:none; border: 1px solid #999; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">← Quay về trang chính</button>
+        </div>
+    </div>
+
+    <script>
+        const appIcons = {
+            1: {icon: "☀️", desc: "Mặt trời và các ngôi sao"},
+            2: {icon: "🎈", desc: "Bóng bay bơm khí Heli"},
+            3: {icon: "🔋", desc: "Pin sạc thiết bị"},
+            4: {icon: "🟢", desc: "Ngọc lục bảo"},
+            5: {icon: "🎾", desc: "Dụng cụ thể thao"},
+            6: {icon: "🌱", desc: "Nền tảng của sự phát triển và sự sống"},
+            7: {icon: "💪", desc: "Protein (Chất đạm)"},
+            8: {icon: "☁️", desc: "Không khí và khí quyển "},
+            9: {icon: "🦷", desc: "Kem đánh răng ngừa sâu răng"},
+            10: {icon: "🚨", desc: "Biển hiệu quảng cáo"},
+            11: {icon: "🧂", desc: "Muối ăn thiết yếu trong đời sống"},
+            12: {icon: "🍀", desc: "Chất diệp lục của lá cây"},
+            13: {icon: "✈️", desc: "Vỏ máy bay, hợp kim siêu nhẹ"},
+            14: {icon: "⛰️", desc: "Cát, đá và chip vi mạch bán dẫn"},
+            15: {icon: "🦴", desc: "Thành phần xương và đầu que diêm"},
+            16: {icon: "🍳", desc: "Lòng đỏ trứng và lưu hóa cao su"},
+            17: {icon: "🏊", desc: "Khử trùng nguồn nước hồ bơi"},
+            18: {icon: "💡", desc: "Khí trơ trong bóng đèn dây tóc"},
+            19: {icon: "🍎", desc: "Khoáng chất trong rau củ quả"},
+            20: {icon: "🦴", desc: "Vỏ sò, vôi vữa xây dựng, xương"},
+            21: {icon: "🚲", desc: "Khung xe đạp thể thao chịu lực"},
+            22: {icon: "🚀", desc: "Vỏ tàu vũ trụ và linh kiện cao cấp"},
+            23: {icon: "⛓", desc: "Thép siêu cứng chế tạo lò xo"},
+            24: {icon: "🍽", desc: "Mạ lớp inox sáng bóng chống gỉ"},
+            25: {icon: "🔨", desc: "Thép làm máy đập nghiền đá"},
+            26: {icon: "🌉", desc: "Cầu đường, nhà bê tông cốt thép"},
+            27: {icon: "🧲", desc: "Chế tạo nam châm vĩnh cửu"},
+            28: {icon: "💰", desc: "Đúc tiền xu, hợp kim lõi điện trở"},
+            29: {icon: "🔌", desc: "Lõi dây dẫn truyền điện năng"},
+            30: {icon: "🎺", desc: "Nhạc cụ đồng, tôn lợp mái nhà"},
+			31: {icon: "🚨", desc: "Đèn LED, đồng hồ điện tử"},
+            32: {icon: "📟", desc: "Bán dẫn điện tử, linh kiện"},
+            33: {icon: "☠️", desc: "Chất độc, thuốc trừ sâu xưa"},
+            34: {icon: "🖨️", desc: "Máy photocopy, cảm biến ảnh"},
+            35: {icon: "🎞️", desc: "Phim chụp ảnh truyền thống"},
+            36: {icon: "🔦", desc: "Đèn flash, đèn cường độ cao"},
+            37: {icon: "🧭", desc: "Điều hướng toàn cầu (GPS)"},
+            38: {icon: "🎇", desc: "Pháo hoa (tạo màu đỏ)"},
+            39: {icon: "⚡", desc: "Tia la-de, công nghệ phát quang"},
+            40: {icon: "🧪", desc: "Ống dẫn hóa chất chống ăn mòn"},
+            41: {icon: "🚄", desc: "Tàu đệm từ trường siêu tốc"},
+            42: {icon: "✂️", desc: "Dụng cụ cắt, thép hợp kim"},
+            43: {icon: "🏥", desc: "Chẩn đoán bằng phóng xạ y tế"},
+            44: {icon: "🔌", desc: "Công tắc điện, tiếp điểm bền bỉ"},
+            45: {icon: "🔦", desc: "Đèn pha rọi sân khấu, ô tô"},
+            46: {icon: "🚗", desc: "Kiểm soát ô nhiễm, bộ xúc tác"},
+            47: {icon: "💍", desc: "Trang sức, bạc đúc, gương soi"},
+            48: {icon: "🎨", desc: "Màu sơn, chất nhuộm cadmium"},
+            49: {icon: "💻", desc: "Màn hình LCD, lớp cảm ứng"},
+            50: {icon: "🥫", desc: "Đồ hộp, vỏ lon thực phẩm"},
+            51: {icon: "🔋", desc: "Ắc quy ô tô, hợp kim cứng"},
+            52: {icon: "🎛️", desc: "Bộ làm lạnh điện nhiệt"},
+            53: {icon: "➕", desc: "Chất khử trùng, cồn i-ốt"},
+            54: {icon: "🚨", desc: "Đèn cường độ cao, đèn pha"},
+            55: {icon: "⏱️", desc: "Đồng hồ nguyên tử chính xác cao"},
+            56: {icon: "🦴", desc: "Chẩn đoán X-quang (Bari sulfat)"},
+            57: {icon: "🔭", desc: "Ống kính viễn vọng, thủy tinh quang học"},
+            58: {icon: "🔥", desc: "Đá đánh lửa trong bật lửa"},
+            59: {icon: "👓", desc: "Kính mắt thợ hàn bảo vệ mắt"},
+            60: {icon: "🚗", desc: "Nam châm động cơ điện ô tô"},
+            61: {icon: "⏱️", desc: "Mặt số dạ quang đồng hồ"},
+            62: {icon: "🧲", desc: "Nam châm động cơ điện chịu nhiệt"},
+            63: {icon: "📺", desc: "TV màu (chất phát quang đỏ)"},
+            64: {icon: "🧠", desc: "Chẩn đoán MRI (chất tương phản)"},
+            65: {icon: "💡", desc: "Đèn huỳnh quang tiết kiệm điện"},
+            66: {icon: "🏗️", desc: "Vật liệu xây dựng thông minh"},
+            67: {icon: "🏥", desc: "Phẫu thuật la-ze y tế"},
+            68: {icon: "🧵", desc: "Truyền thông cáp quang ngầm"},
+            69: {icon: "👁️", desc: "Truyền thông quang dẫn, la-ze mắt"},
+            70: {icon: "🩺", desc: "Dây truyền tín hiệu la-ze khoa học"},
+            71: {icon: "🩺", desc: "Y tế quang động học trị liệu"},
+            72: {icon: "🚢", desc: "Tàu ngầm hạt nhân, lò phản ứng"},
+            73: {icon: "📱", desc: "Điện thoại di động, tụ điện"},
+            74: {icon: "💡", desc: "Dây tóc bóng đèn sợi đốt"},
+            75: {icon: "🚀", desc: "Động cơ tên lửa, hợp kim chịu nhiệt"},
+            76: {icon: "✍️", desc: "Đầu ngòi bút máy cao cấp"},
+            77: {icon: "🔌", desc: "Bugi đánh lửa động cơ"},
+            78: {icon: "🧪", desc: "Dụng cụ thí nghiệm chịu hóa chất"},
+            79: {icon: "👑", desc: "Trang sức quý giá, tích trữ giá trị"},
+            80: {icon: "🌡️", desc: "Nhiệt kế thủy ngân đo nhiệt độ"},
+            81: {icon: "🌡️", desc: "Nhiệt kế nhiệt độ thấp"},
+            82: {icon: "🏋️", desc: "Quả tạ, tấm chắn phóng xạ, chì"}
+           
+           
+           
+        };
+
+        function startApp() {
+            const lp = document.getElementById('landing-page');
+            lp.style.opacity = '0';
+            lp.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                lp.style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                renderTable();       
+                renderImgTable();    
+                window.scrollTo(0, 0);
+            }, 600);
+        }
+
+        function switchTableMode(mode) {
+            const tabData = document.getElementById('tab-data');
+            const tabImg = document.getElementById('tab-img');
+            const wrapperData = document.getElementById('wrapper-data');
+            const wrapperImg = document.getElementById('wrapper-img');
+
+            if (mode === 'data') {
+                tabData.classList.add('active');
+                tabImg.classList.remove('active');
+                wrapperData.classList.remove('hidden');
+                wrapperImg.classList.add('hidden');
+            } else {
+                tabData.classList.remove('active');
+                tabImg.classList.add('active');
+                wrapperData.classList.add('hidden');
+                wrapperImg.classList.remove('hidden');
+            }
+        }
+
+        function openModal(type) {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('modal-' + type).style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('overlay').style.display = 'none';
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        }
+
+        const fullData = {
+            1: {s:"H", n:"Hydrogen", vn:"Hiđrô", m:"1.008", en:"2.20", c:"1s¹", ox:"-1,1", b:"s"},
+            2: {s:"He", n:"Helium", vn:"Heli", m:"4.003", en:"-", c:"1s²", ox:"0", b:"p"},
+            3: {s:"Li", n:"Lithium", vn:"Liti", m:"6.94", en:"0.98", c:"[He]2s¹", ox:"1", b:"s"},
+            4: {s:"Be", n:"Beryllium", vn:"Beryli", m:"9.01", en:"1.57", c:"[He]2s²", ox:"2", b:"s"},
+            5: {s:"B", n:"Boron", vn:"Bor", m:"10.81", en:"2.04", c:"[He]2s²2p¹", ox:"3", b:"p"},
+            6: {s:"C", n:"Carbon", vn:"Cacbon", m:"12.01", en:"2.55", c:"[He]2s²2p²", ox:"-4,2,4", b:"p"},
+            7: {s:"N", n:"Nitrogen", vn:"Nitơ", m:"14.01", en:"3.04", c:"[He]2s²2p³", ox:"-3,3,5", b:"p"},
+            8: {s:"O", n:"Oxygen", vn:"Oxy", m:"15.999", en:"3.44", c:"1s²2s²2p⁴", ox:"-2", b:"p"},
+            9: {s:"F", n:"Fluorine", vn:"Fluor", m:"18.998", en:"3.98", c:"[He]2s²2p⁵", ox:"-1", b:"p"},
+            10: {s:"Ne", n:"Neon", vn:"Neon", m:"20.18", en:"-", c:"[He]2s²2p⁶", ox:"0", b:"p"},
+            11: {s:"Na", n:"Sodium", vn:"Natri", m:"22.99", en:"0.93", c:"[Ne]3s¹", ox:"1", b:"s"},
+            12: {s:"Mg", n:"Magnesium", vn:"Magie", m:"24.31", en:"1.31", c:"[Ne]3s²", ox:"2", b:"s"},
+            13: {s:"Al", n:"Aluminium", vn:"Nhôm", m:"26.98", en:"1.61", c:"[Ne]3s²3p¹", ox:"3", b:"p"},
+            14: {s:"Si", n:"Silicon", vn:"Silic", m:"28.09", en:"1.90", c:"[Ne]3s²3p²", ox:"-4,4", b:"p"},
+            15: {s:"P", n:"Phosphorus", vn:"Phốtpho", m:"30.97", en:"2.19", c:"[Ne]3s²3p³", ox:"-3,3,5", b:"p"},
+            16: {s:"S", n:"Sulfur", vn:"Lưu huỳnh", m:"32.06", en:"2.58", c:"[Ne]3s²3p⁴", ox:"-2,4,6", b:"p"},
+            17: {s:"Cl", n:"Chlorine", vn:"Clo", m:"35.45", en:"3.16", c:"[Ne]3s²3p⁵", ox:"-1,1,3,5,7", b:"p"},
+            18: {s:"Ar", n:"Argon", vn:"Argon", m:"39.95", en:"-", c:"[Ne]3s²3p⁶", ox:"0", b:"p"},
+            19: {s:"K", n:"Potassium", vn:"Kali", m:"39.10", en:"0.82", c:"[Ar]4s¹", ox:"1", b:"s"},
+            20: {s:"Ca", n:"Calcium", vn:"Canxi", m:"40.08", en:"1.00", c:"[Ar]4s²", ox:"2", b:"s"},
+            21: {s:"Sc", n:"Scandium", vn:"Scandi", m:"44.96", en:"1.36", c:"[Ar]3d¹4s²", ox:"3", b:"d"},
+            22: {s:"Ti", n:"Titanium", vn:"Titan", m:"47.90", en:"1.54", c:"[Ar]3d²4s²", ox:"2,3,4", b:"d"},
+            23: {s:"V", n:"Vanadium", vn:"Vanadi", m:"50.94", en:"1.63", c:"[Ar]3d³4s²", ox:"2,3,4,5", b:"d"},
+            24: {s:"Cr", n:"Chromium", vn:"Crôm", m:"51.996", en:"1.66", c:"[Ar]3d⁵4s¹", ox:"2,3,6", b:"d"},
+            25: {s:"Mn", n:"Manganese", vn:"Mangan", m:"54.94", en:"1.55", c:"[Ar]3d⁵4s²", ox:"2,3,4,6,7", b:"d"},
+            26: {s:"Fe", n:"Iron", vn:"Sắt", m:"55.85", en:"1.83", c:"[Ar]3d⁶4s²", ox:"2,3,6", b:"d"},
+            27: {s:"Co", n:"Cobalt", vn:"Coban", m:"58.93", en:"1.88", c:"[Ar]3d⁷4s²", ox:"2,3", b:"d"},
+            28: {s:"Ni", n:"Nickel", vn:"Niken", m:"58.71", en:"1.91", c:"[Ar]3d⁸4s²", ox:"2,3", b:"d"},
+            29: {s:"Cu", n:"Copper", vn:"Đồng", m:"63.54", en:"1.90", c:"[Ar]3d¹⁰4s¹", ox:"1,2", b:"d"},
+            30: {s:"Zn", n:"Zinc", vn:"Kẽm", m:"65.41", en:"1.65", c:"[Ar]3d⁰4s²", ox:"2", b:"d"},
+            31: {s:"Ga", n:"Gallium", vn:"Gali", m:"69.72", en:"1.81", c:"[Ar]4p¹", ox:"3", b:"p"},
+            32: {s:"Ge", n:"Germanium", vn:"Gecmani", m:"72.63", en:"2.01", c:"[Ar]4p²", ox:"2,4", b:"p"},
+            33: {s:"As", n:"Arsenic", vn:"Asen", m:"74.92", en:"2.18", c:"[Ar]4p³", ox:"-3,3,5", b:"p"},
+            34: {s:"Se", n:"Selenium", vn:"Selen", m:"78.97", en:"2.55", c:"[Ar]4p⁴", ox:"-2,4,6", b:"p"},
+            35: {s:"Br", n:"Bromine", vn:"Brôm", m:"79.90", en:"2.96", c:"[Ar]4p⁵", ox:"-1,1,3,5", b:"p"},
+            36: {s:"Kr", n:"Krypton", vn:"Krypton", m:"83.80", en:"3.00", c:"[Ar]4p⁶", ox:"0", b:"p"},
+            37: {s:"Rb", n:"Rubidium", vn:"Rubidi", m:"85.47", en:"0.82", c:"[Kr]5s¹", ox:"1", b:"s"},
+            38: {s:"Sr", n:"Strontium", vn:"Stronti", m:"87.62", en:"0.95", c:"[Kr]5s²", ox:"2", b:"s"},
+            39: {s:"Y", n:"Yttrium", vn:"Ytri", m:"88.91", en:"1.22", c:"[Kr]4d¹5s²", ox:"3", b:"d"},
+            40: {s:"Zr", n:"Zirconium", vn:"Zirconi", m:"91.22", en:"1.33", c:"[Kr]4d²5s²", ox:"4", b:"d"},
+            41: {s:"Nb", n:"Niobium", vn:"Niobi", m:"92.91", en:"1.6", c:"[Kr]4d⁴5s¹", ox:"3,5", b:"d"},
+            42: {s:"Mo", n:"Molybdenum", vn:"Molybden", m:"95.95", en:"2.16", c:"[Kr]4d⁵5s¹", ox:"2,3,4,5,6", b:"d"},
+            43: {s:"Tc", n:"Technetium", vn:"Tecneti", m:"(98)", en:"1.9", c:"[Kr]4d⁵5s²", ox:"4,7", b:"d"},
+            44: {s:"Ru", n:"Ruthenium", vn:"Rutheni", m:"101.1", en:"2.2", c:"[Kr]4d⁷5s¹", ox:"2,3,4,6,8", b:"d"},
+            45: {s:"Rh", n:"Rhodium", vn:"Rhodi", m:"102.9", en:"2.28", c:"[Kr]4d⁸5s¹", ox:"2,3,4", b:"d"},
+            46: {s:"Pd", n:"Palladium", vn:"Paladi", m:"106.4", en:"2.2", c:"[Kr]4d¹⁰", ox:"2,4", b:"d"},
+            47: {s:"Ag", n:"Silver", vn:"Bạc", m:"107.9", en:"1.93", c:"[Kr]4d¹⁰5s¹", ox:"1", b:"d"},
+            48: {s:"Cd", n:"Cadmium", vn:"Cadimi", m:"112.4", en:"1.69", c:"[Kr]4d¹⁰5s²", ox:"2", b:"d"},
+            49: {s:"In", n:"Indium", vn:"Indi", m:"114.8", en:"1.78", c:"[Kr]4d¹⁰5s²5p¹", ox:"3", b:"p"},
+            50: {s:"Sn", n:"Tin", vn:"Thiếc", m:"118.7", en:"1.96", c:"[Kr]4d¹⁰5s²5p²", ox:"2,4", b:"p"},
+            51: {s:"Sb", n:"Antimony", vn:"Antimon", m:"121.8", en:"2.05", c:"[Kr]4d¹⁰5s²5p³", ox:"-3,3,5", b:"p"},
+            52: {s:"Te", n:"Tellurium", vn:"Teluri", m:"127.6", en:"2.1", c:"[Kr]4d¹⁰5s²5p⁴", ox:"-2,4,6", b:"p"},
+            53: {s:"I", n:"Iodine", vn:"Iốt", m:"126.9", en:"2.66", c:"[Kr]4d¹⁰5s²5p⁵", ox:"-1,1,3,5,7", b:"p"},
+            54: {s:"Xe", n:"Xenon", vn:"Xenon", m:"131.3", en:"2.6", c:"[Kr]4d¹⁰5s²5p⁶", ox:"0", b:"p"},
+            55: {s:"Cs", n:"Caesium", vn:"Xesi", m:"132.9", en:"0.79", c:"[Xe]6s¹", ox:"1", b:"s"},
+            56: {s:"Ba", n:"Barium", vn:"Bari", m:"137.3", en:"0.89", c:"[Xe]6s²", ox:"2", b:"s"},
+            57: {s:"La", n:"Lanthanum", vn:"Lantan", m:"138.9", en:"1.1", c:"[Xe]5d¹6s²", ox:"3", b:"f"},
+            58: {s:"Ce", n:"Cerium", vn:"Ceri", m:"140.1", en:"1.12", c:"[Xe]4f¹5d¹6s²", ox:"3,4", b:"f"},
+            59: {s:"Pr", n:"Praseodymium", vn:"Prazeođim", m:"140.9", en:"1.13", c:"[Xe]4f³6s²", ox:"3,4", b:"f"},
+            60: {s:"Nd", n:"Neodymium", vn:"Neođim", m:"144.2", en:"1.14", c:"[Xe]4f⁴6s²", ox:"3", b:"f"},
+            61: {s:"Pm", n:"Promethium", vn:"Prometi", m:"(145)", en:"1.13", c:"[Xe]4f⁵6s²", ox:"3", b:"f"},
+            62: {s:"Sm", n:"Samarium", vn:"Samari", m:"150.4", en:"1.17", c:"[Xe]4f⁶6s²", ox:"2,3", b:"f"},
+            63: {s:"Eu", n:"Europium", vn:"Europi", m:"152.0", en:"1.2", c:"[Xe]4f⁷6s²", ox:"2,3", b:"f"},
+            64: {s:"Gd", n:"Gadolinium", vn:"Gađolini", m:"157.3", en:"1.2", c:"[Xe]4f⁷5d¹6s²", ox:"3", b:"f"},
+            65: {s:"Tb", n:"Terbium", vn:"Tecbi", m:"158.9", en:"1.2", c:"[Xe]4f⁹6s²", ox:"3,4", b:"f"},
+            66: {s:"Dy", n:"Dysprosium", vn:"Dysprosi", m:"162.5", en:"1.22", c:"[Xe]4f¹⁰6s²", ox:"3", b:"f"},
+            67: {s:"Ho", n:"Holmium", vn:"Honmi", m:"164.9", en:"1.23", c:"[Xe]4f¹¹6s²", ox:"3", b:"f"},
+            68: {s:"Er", n:"Erbium", vn:"Ecbi", m:"167.3", en:"1.24", c:"[Xe]4f¹²6s²", ox:"3", b:"f"},
+            69: {s:"Tm", n:"Thulium", vn:"Tuli", m:"168.9", en:"1.25", c:"[Xe]4f¹³6s²", ox:"3", b:"f"},
+            70: {s:"Yb", n:"Ytterbium", vn:"Ytecbi", m:"173.1", en:"1.1", c:"[Xe]4f¹⁴6s²", ox:"2,3", b:"f"},
+            71: {s:"Lu", n:"Lutetium", vn:"Luteti", m:"175.0", en:"1.27", c:"[Xe]4f¹⁴5d¹6s²", ox:"3", b:"f"},
+            72: {s:"Hf", n:"Hafnium", vn:"Hafni", m:"178.5", en:"1.3", c:"[Xe]4f¹⁴5d²6s²", ox:"4", b:"d"},
+            73: {s:"Ta", n:"Tantalum", vn:"Tantan", m:"180.9", en:"1.5", c:"[Xe]4f¹⁴5d³6s²", ox:"5", b:"d"},
+            74: {s:"W", n:"Tungsten", vn:"Vônfram", m:"183.8", en:"2.36", c:"[Xe]4f¹⁴5d⁴6s²", ox:"2,3,4,5,6", b:"d"},
+            75: {s:"Re", n:"Rhenium", vn:"Rheni", m:"186.2", en:"1.9", c:"[Xe]4f¹⁴5d⁵6s²", ox:"-1,2,4,6,7", b:"d"},
+            76: {s:"Os", n:"Osmium", vn:"Osmi", m:"190.2", en:"2.2", c:"[Xe]4f¹⁴5d⁶6s²", ox:"2,3,4,6,8", b:"d"},
+            77: {s:"Ir", n:"Iridium", vn:"Iriđi", m:"192.2", en:"2.2", c:"[Xe]4f¹⁴5d⁷6s²", ox:"2,3,4,6", b:"d"},
+            78: {s:"Pt", n:"Platinum", vn:"Bạch kim", m:"195.1", en:"2.28", c:"[Xe]4f¹⁴5d⁹6s¹", ox:"2,4", b:"d"},
+            79: {s:"Au", n:"Gold", vn:"Vàng", m:"197.0", en:"2.54", c:"[Xe]4f¹⁴5d⁰6s¹", ox:"1,3", b:"d"},
+            80: {s:"Hg", n:"Mercury", vn:"Thủy ngân", m:"200.6", en:"2.00", c:"[Xe]4f¹⁴5d¹⁰6s²", ox:"1,2", b:"d"},
+            81: {s:"Tl", n:"Thallium", vn:"Tali", m:"204.4", en:"1.62", c:"[Xe]4f¹⁴5d¹⁰6s²6p¹", ox:"1,3", b:"p"},
+            82: {s:"Pb", n:"Lead", vn:"Chì", m:"207.2", en:"2.33", c:"[Xe]4f¹⁴5d¹⁰6s²6p²", ox:"2,4", b:"p"},
+            83: {s:"Bi", n:"Bismuth", vn:"Bismut", m:"209.0", en:"2.02", c:"[Xe]4f¹⁴5d¹⁰6s²6p³", ox:"3,5", b:"p"},
+            84: {s:"Po", n:"Polonium", vn:"Poloni", m:"(209)", en:"2.0", c:"[Xe]4f¹⁴5d¹⁰6s²6p⁴", ox:"2,4", b:"p"},
+            85: {s:"At", n:"Astatine", vn:"Astatin", m:"(210)", en:"2.2", c:"[Xe]4f¹⁴5d¹⁰6s²6p⁵", ox:"-1,1,3,5,7", b:"p"},
+            86: {s:"Rn", n:"Radon", vn:"Radon", m:"(222)", en:"2.2", c:"[Xe]4f¹⁴5d¹⁰6s²6p⁶", ox:"0", b:"p"},
+            87: {s:"Fr", n:"Francium", vn:"Franci", m:"(223)", en:"0.7", c:"[Rn]7s¹", ox:"1", b:"s"},
+            88: {s:"Ra", n:"Radium", vn:"Rađi", m:"(226)", en:"0.9", c:"[Rn]7s²", ox:"2", b:"s"},
+            89: {s:"Ac", n:"Actinium", vn:"Actini", m:"(227)", en:"1.1", c:"[Rn]6d¹7s²", ox:"3", b:"f"},
+            90: {s:"Th", n:"Thorium", vn:"Thori", m:"232.0", en:"1.3", c:"[Rn]6d²7s²", ox:"4", b:"f"},
+            91: {s:"Pa", n:"Protactinium", vn:"Protactini", m:"231.0", en:"1.5", c:"[Rn]5f²6d¹7s²", ox:"4,5", b:"f"},
+            92: {s:"U", n:"Uranium", vn:"Urani", m:"238.0", en:"1.38", c:"[Rn]5f³6d¹7s²", ox:"3,4,5,6", b:"f"},
+            93: {s:"Np", n:"Neptunium", vn:"Neptuni", m:"(237)", en:"1.36", c:"[Rn]5f⁴6d¹7s²", ox:"3,4,5,6", b:"f"},
+            94: {s:"Pu", n:"Plutonium", vn:"Plutoni", m:"(244)", en:"1.28", c:"[Rn]5f⁶7s²", ox:"3,4,5,6", b:"f"},
+            95: {s:"Am", n:"Americium", vn:"Americi", m:"(243)", en:"1.13", c:"[Rn]5f⁷7s²", ox:"3,4,5,6", b:"f"},
+            96: {s:"Cm", n:"Curium", vn:"Curi", m:"(247)", en:"1.28", c:"[Rn]5f⁷6d¹7s²", ox:"3", b:"f"},
+            97: {s:"Bk", n:"Berkelium", vn:"Berkeli", m:"(247)", en:"1.3", c:"[Rn]5f⁹7s²", ox:"3,4", b:"f"},
+            98: {s:"Cf", n:"Californium", vn:"Californi", m:"(251)", en:"1.3", c:"[Rn]5f¹⁰7s²", ox:"3", b:"f"},
+            99: {s:"Es", n:"Einsteinium", vn:"Einsteini", m:"(252)", en:"1.3", c:"[Rn]5f¹¹7s²", ox:"3", b:"f"},
+            100: {s:"Fm", n:"Fermium", vn:"Fermi", m:"(257)", en:"1.3", c:"[Rn]5f¹²7s²", ox:"3", b:"f"},
+            101: {s:"Md", n:"Mendelevium", vn:"Mendelevi", m:"(258)", en:"1.3", c:"[Rn]5f¹³7s²", ox:"2,3", b:"f"},
+            102: {s:"No", n:"Nobelium", vn:"Nobeli", m:"(259)", en:"1.3", c:"[Rn]5f¹⁴7s²", ox:"2,3", b:"f"},
+            103: {s:"Lr", n:"Lawrencium", vn:"Lorenxi", m:"(262)", en:"1.3", c:"[Rn]5f¹⁴7s²7p¹", ox:"3", b:"f"},
+            104: {s:"Rf", n:"Rutherfordium", vn:"Rutherfordi", m:"(267)", en:"-", c:"[Rn]5f¹⁴6d²7s²", ox:"4", b:"d"},
+            105: {s:"Db", n:"Dubnium", vn:"Dubni", m:"(270)", en:"-", c:"[Rn]5f¹⁴6d³7s²", ox:"5", b:"d"},
+            106: {s:"Sg", n:"Seaborgium", vn:"Seaborgium", m:"(271)", en:"-", c:"[Rn]5f¹⁴6d⁴7s²", ox:"6", b:"d"},
+            107: {s:"Bh", n:"Bohrium", vn:"Bohri", m:"(270)", en:"-", c:"[Rn]5f¹⁴6d⁵7s²", ox:"7", b:"d"},
+            108: {s:"Hs", n:"Hassium", vn:"Hassi", m:"(277)", en:"-", c:"[Rn]5f¹⁴6d⁶7s²", ox:"8", b:"d"},
+            109: {s:"Mt", n:"Meitnerium", vn:"Meitneri", m:"(276)", en:"-", c:"[Rn]5f¹⁴6d⁷7s²", ox:"-", b:"d"},
+            110: {s:"Ds", n:"Darmstadtium", vn:"Darmstadtium", m:"(281)", en:"-", c:"[Rn]5f¹⁴6d⁸7s²", ox:"-", b:"d"},
+            111: {s:"Rg", n:"Roentgenium", vn:"Roentgeni", m:"(280)", en:"-", c:"[Rn]5f¹⁴6d⁹7s²", ox:"-", b:"d"},
+            112: {s:"Cn", n:"Copernicium", vn:"Copernici", m:"(285)", en:"-", c:"[Rn]5f¹⁴6d¹⁰7s²", ox:"2", b:"d"},
+            113: {s:"Nh", n:"Nihonium", vn:"Nihoni", m:"(284)", en:"-", c:"[Rn]5f¹⁴6d¹⁰7s²7p¹", ox:"-", b:"p"},
+            114: {s:"Fl", n:"Flerovium", vn:"Flerovi", m:"(289)", en:"-", c:"[Rn]5f¹⁴6d¹⁰7s²7p²", ox:"-", b:"p"},
+            115: {s:"Mc", n:"Moscovium", vn:"Moscovi", m:"(288)", en:"-", c:"[Rn]5f¹⁴6d¹⁰7s²7p³", ox:"-", b:"p"},
+            116: {s:"Lv", n:"Livermorium", vn:"Livermori", m:"(293)", en:"-", c:"[Rn]5f¹⁴6d¹⁰7s²7p⁴", ox:"-", b:"p"},
+            117: {s:"Ts", n:"Tennessine", vn:"Tennessine", m:"(294)", en:"-", c:"[Rn]5f¹⁴6d¹⁰7s²7p⁵", ox:"-", b:"p"},
+            118: {s:"Og", n:"Oganesson", vn:"Oganesson", m:"(294)", en:"-", c:"[Rn]5f¹⁴6d¹⁰7s²7p⁶", ox:"0", b:"p"}
+        };
+
+        function getPos(n) {
+            if (n === 1) return {r:1, c:1}; if (n === 2) return {r:1, c:18};
+            if (n >= 3 && n <= 4) return {r:2, c:n-2}; if (n >= 5 && n <= 10) return {r:2, c:n+8};
+            if (n >= 11 && n <= 12) return {r:3, c:n-10}; if (n >= 13 && n <= 18) return {r:3, c:n};
+            if (n >= 19 && n <= 36) return {r:4, c:n-18}; if (n >= 37 && n <= 54) return {r:5, c:n-36};
+            if (n >= 55 && n <= 56) return {r:6, c:n-54}; if (n >= 72 && n <= 86) return {r:6, c:n-68};
+            if (n >= 87 && n <= 88) return {r:7, c:n-86}; if (n >= 104 && n <= 118) return {r:7, c:n-100};
+            if (n >= 57 && n <= 71) return {r:9, c:n-53}; if (n >= 89 && n <= 103) return {r:10, c:n-85};
+        }
+		
+        function renderTable() {
+            const table = document.getElementById('table');
+            if(table.innerHTML !== "") return; 
+            
+            for (let i = 1; i <= 118; i++) {
+                const el = fullData[i];
+                if(!el) continue;
+                const pos = getPos(i);
+                const a = document.createElement('a');
+                a.className = `element ${el.b}`;
+                a.style.gridRow = pos.r; a.style.gridColumn = pos.c;
+                if(i === 26){
+					a.href = "fe.html";
+}				else{
+					a.href = `https://vi.wikipedia.org/wiki/${el.vn}`;
+}
+                a.innerHTML = `
+                    <div class="num">${i}</div>
+                    <div class="mass">${el.m}</div>
+                    <div class="sym">${el.s}</div>
+                    <div class="en">${el.en}</div>
+                    <div class="name">${el.n}</div>
+                    <div class="conf">${el.c}</div>
+                    <div class="ox">${el.ox}</div>
+                `;
+                table.appendChild(a);
+            }
+        }
+
+        function renderImgTable() {
+            const tableImg = document.getElementById('table-img');
+            if(tableImg.innerHTML !== "") return;
+
+            for (let i = 1; i <= 118; i++) {
+                const el = fullData[i];
+                if(!el) continue;
+                const pos = getPos(i);
+                
+                // Đổi thành thẻ div tĩnh để loại bỏ chức năng liên kết ngoài cho bảng minh họa
+                const divCell = document.createElement('div');
+                divCell.className = `element-img-mode ${el.b}`;
+                divCell.style.gridRow = pos.r; 
+                divCell.style.gridColumn = pos.c;
+
+                const itemApp = appIcons[i] || {icon: "🔬", desc: "Phục vụ công tác nghiên cứu khoa học"};
+
+                divCell.innerHTML = `
+                    <div class="el-header">
+                        <span>${i}</span>
+                        <span>${el.s}</span>
+                    </div>
+                    <div class="el-icon">${itemApp.icon}</div>
+                    <div class="el-vname">${el.vn}</div>
+                    <div class="el-desc">${itemApp.desc}</div>
+                `;
+                tableImg.appendChild(divCell);
+            }
+        }
+    </script>
+</body>
+</html>
